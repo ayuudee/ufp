@@ -3,6 +3,7 @@ from ufp.formatter.count import CountFormatter
 from ufp.parser.base import ParserFilter
 from ufp.parser.file import FileParser
 import argparse
+from datetime import datetime
 from sys import stdin
 
 
@@ -106,6 +107,10 @@ class Cli():
                                 'entries which have a destination ip '
                                 'matching the value provided.')
 
+        arg_parser.add_argument('-sec', '--filter-seconds-before-now',
+                                dest='sec', type=int, help='Only display '
+                                'entries from `sec` seconds before now.')
+
         self.args = arg_parser.parse_args()
 
         filename = self.args.filename
@@ -120,6 +125,11 @@ class Cli():
         log_filter = ParserFilter(log_parser, self.args)
 
         entries = list(log_filter)
+
+        # Filter entries
+        if self.args.sec:
+          now = datetime.now()
+          entries = [x for x in entries if (now - x.date).seconds < self.args.sec]
 
         self.formatters = []
 
